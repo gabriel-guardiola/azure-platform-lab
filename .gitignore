@@ -48,6 +48,7 @@ terraform.rc
 *.tfstate
 *.tfstate.*
 *.tfvars
+practice/tfaz
 *.tfplan
 tfplan
 

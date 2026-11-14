@@ -48,7 +48,6 @@ terraform.rc
 *.tfstate
 *.tfstate.*
 *.tfvars
-practice/tfaz
 *.tfplan
 tfplan
 
@@ -64,3 +63,6 @@ venv/
 
 # Mac
 .DS_Store
+
+#practice
+practice/

@@ -26,6 +26,17 @@ resource "azurerm_linux_web_app" "app" {
   tags                = var.tags
   https_only          = true
 
+  # Azure creates an identify for this app (no password needed)
+  identity {
+    type = "SystemAssigned"
+  }
+
+  # App setting that points to the secrect instead of holding its value
+  app_settings = {
+    MY_SECRET = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.db.versionless_id})"
+  }
+
+
   site_config {
     always_on           = false #required in F1
     ftps_state          = "Disabled"

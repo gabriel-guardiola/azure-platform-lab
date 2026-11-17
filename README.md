@@ -4,7 +4,7 @@ Hands-on Azure platform engineering lab: Terraform, Azure DevOps, AKS, Key Vault
 ## What it builds
 <!-- Check each layer on the Sunday it's working. -->
 - [x] **Nov 15** – App Service deployed with Terraform (variables, outputs, required tags)
-- [ ] **Nov 22** – Remote state in Azure Storage · Key Vault + managed identity (no secrets in code) · Azure DevOps pipeline · Docker container on local Kubernetes
+- [x] **Nov 22** – Remote state in Azure Storage · Key Vault + managed identity (no secrets in code) · Azure DevOps pipeline · Docker container on local Kubernetes
 - [ ] **Dec 6** – Storage account (TLS 1.2, no public access)
 - [ ] **Dec 13** – Container registry · VNet integration + Key Vault private endpoint + private DNS
 - [ ] **Dec 20** – Log Analytics + Application Insights

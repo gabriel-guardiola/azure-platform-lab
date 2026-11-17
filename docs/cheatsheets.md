@@ -58,3 +58,33 @@
 - **Drift** = a change made outside Terraform (e.g., in the portal), so Azure no longer matches the code ; how `plan` shows it: `~` update in-place with old value `->` new value; `apply` puts it back to match the code
 - Python: types I used `int`, `float`, `str`, `bool` | f-string example `print(f"Hello {name}, you have {count} resources")`
 - Python: `if` / `while` example `if count > 0: print("found")` / `while count < 5: count = count + 1`
+
+
+## Week 2 (Nov 16-20)
+
+#### Mon, Nov 16
+
+- State file stores = Terraform's record of every resource it manages (IDs, attributes, and sometimes secret values), used to compare code vs. what exists in Azure
+- Why remote state: shared (a team or pipeline uses the same state), locked (prevents two applies at once), safe (not on a laptop; versioned so old copies can be recovered)
+- Why state never goes in Git: it can contain secrets in plain text (e.g., my generated DbPassword) and resource details
+- State locking = Azure Storage puts a lease (lock) on the state blob during plan/apply so two runs can't change it at the same time | `-migrate-state` = moves existing local state into the new backend during `init`
+- `git checkout -b` = creates a new branch and switches to it | `push -u` = pushes the branch to GitHub and sets it to track the remote, so later `git push` works without extra arguments
+- Pull request = request to merge my branch into `main`; shows the diff, allows review, runs checks, then merge
+- My 4-step branch workflow: 1) `git checkout -b feature/x` 2) commit changes 3) `git push -u origin feature/x` and open a PR 4) merge, delete branch, then `git checkout main` + `git pull`
+- Parallel job = capacity to run one pipeline job at a time; Microsoft-hosted free tier = 1 job, 1,800 min/month, 60 min per run; self-hosted = 1 free job on an agent I run myself
+- Verified the hosted agent with a test pipeline (`pipelines/test.yml`); first run asks to authorize the GitHub connection
+- Pipeline log: Pipelines > pipeline > run > job > click a step
+
+#### Tue, Nov 17
+
+- Key Vault RBAC mode vs access policies: RBAC = access controlled with Azure roles (same as other resources, works with IAM); access policies = older per-vault permission list that ignores Azure roles
+- Secrets Officer = can create, read, update, and delete secrets (me / the pipeline) | Secrets User = can only read secret values (the web app)
+- System vs user-assigned identity: system-assigned = created with the resource and deleted with it (1 per resource); user-assigned = standalone identity that can be shared by multiple resources and outlives them
+- Key Vault reference: `@Microsoft.KeyVault(SecretUri=<secret versionless ID>)` = the app setting points to the secret; App Service fetches the value at runtime using the managed identity
+- Soft delete = deleted vaults/secrets are kept recoverable for a retention period (7 days in my lab) and the name stays reserved | Purge = permanently deletes a soft-deleted item so the name can be reused
+- Why a 403 right after a role assignment: new role assignments take several minutes to take effect
+- Key Vault reference results are cached: after the role is active, restart the app (or change an app setting) so it checks again
+- `depends_on` = explicit dependency for when Terraform can't detect one from references (the secret must wait for my role assignment)
+- Data source example: `data "azurerm_client_config" "current"` = reads my tenant ID and object ID without creating anything
+- PowerShell vs zsh: `export VAR=$(cmd)` is Bash/zsh only; in pwsh use `$env:VAR = (cmd)`; `$PID` is a reserved pwsh variable, don't use it as a name
+- Why destroy after each session: avoid hourly charges and prove the lab rebuilds from code; never destroy `rg-tfstate`

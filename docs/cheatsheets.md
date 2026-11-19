@@ -88,3 +88,17 @@
 - Data source example: `data "azurerm_client_config" "current"` = reads my tenant ID and object ID without creating anything
 - PowerShell vs zsh: `export VAR=$(cmd)` is Bash/zsh only; in pwsh use `$env:VAR = (cmd)`; `$PID` is a reserved pwsh variable, don't use it as a name
 - Why destroy after each session: avoid hourly charges and prove the lab rebuilds from code; never destroy `rg-tfstate`
+
+#### Wed, Nov 18
+
+- YAML indentation rule: spaces only (no tabs), consistent indentation (2 spaces); indentation shows what belongs to what
+- List syntax `- item` | key/value syntax `key: value` | `|` = multi-line string that keeps line breaks (used for inline scripts)
+- Pipeline hierarchy: trigger > pool > stages > jobs > steps (a stage holds jobs, a job holds steps, steps are tasks or scripts)
+- Stage = major phase (e.g., Validate, Plan, Apply) | Job = runs on one agent | Step = a single task or script
+- Service connection = saved, secure link from Azure DevOps to Azure that pipelines use to sign in and deploy
+- Workload identity federation vs client secret: federation = Azure DevOps gets a short-lived token at run time, nothing stored that can leak or expire; client secret = a stored password that must be rotated and can be stolen
+- Contributor vs RBAC Administrator (why both): Contributor = create/manage resources but can't grant access; RBAC Administrator = can create role assignments, needed for Terraform's Key Vault roles
+- Service connection scope = whole subscription, because the pipeline creates `rg-gglab` and reads state in `rg-tfstate`
+- Idempotent script = safe to run more than once with the same result (`grant-pipeline-roles.ps1` skips roles that already exist)
+- Environment + approval = `lab` environment with me as approver; the Apply stage pauses until I approve
+- Never hardcode IDs in a public repo: pass them as script parameters

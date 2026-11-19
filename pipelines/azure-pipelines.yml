@@ -27,7 +27,7 @@ stages:
           - task: TerraformInstaller@1
             displayName: Install Terraform
             inputs:
-              terraformVersion: '1.17.x'
+              terraformVersion: '1.17.2'
 
           - script: terraform -version
             displayName: Terraform Version
@@ -47,7 +47,7 @@ stages:
           - task: TerraformInstaller@1
             displayName: Install Terraform
             inputs:
-              terraformVersion: '1.17.x'
+              terraformVersion: '1.17.2'
 
           - task: AzureCLI@2
             displayName: terraform plan
@@ -84,7 +84,7 @@ stages:
                 - task: TerraformInstaller@1
                   displayName: Install Terraform
                   inputs:
-                    terraformVersion: '1.17.x'
+                    terraformVersion: '1.17.2'
 
                 - task: AzureCLI@2
                   displayName: terraform apply

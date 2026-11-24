@@ -102,3 +102,55 @@
 - Idempotent script = safe to run more than once with the same result (`grant-pipeline-roles.ps1` skips roles that already exist)
 - Environment + approval = `lab` environment with me as approver; the Apply stage pauses until I approve
 - Never hardcode IDs in a public repo: pass them as script parameters
+
+#### Thu, Nov 19
+ 
+- Pipeline order: trigger > pool > variables > stages > jobs > steps
+- `trigger` vs `pr`: trigger = runs on pushes/merges to `main` (filtered by `paths`); pr = runs Validate + Plan on every pull request to `main`
+- Path filters: `paths: include: [terraform/*, pipelines/*]` skips runs when only other folders change (e.g., `app/`, `k8s/`)
+- Job vs deployment job: job = runs steps on an agent; deployment job = targets an environment, so approvals and deployment history apply
+- Environment + approval check = the Apply stage pauses until I approve it in Azure DevOps
+- `condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))` = Apply only runs on `main`, never on PR branches
+- `ARM_USE_OIDC` + `ARM_OIDC_TOKEN` = Terraform signs in with the service connection's short-lived token (workload identity federation), no stored secret
+- `addSpnToEnvironment: true` = exposes `$servicePrincipalId`, `$tenantId`, `$idToken` to the inline script
+- Pipeline YAML scripts stay Bash because they run on the Linux agent, not my Mac
+- Branch protection = `main` requires a PR and a passing pipeline check before merge
+- YAML keys are case-sensitive and indentation decides where a key belongs ("Unexpected value" = wrong place or wrong spelling)
+- From now on: `apply` runs only in the pipeline; locally I only run `plan`
+ 
+#### Fri, Nov 20
+ 
+- Image vs container: image = read-only template built by `docker build`; container = a running copy made by `docker run` (each run makes a new one)
+- `FROM` base image | `WORKDIR` working folder | `COPY` files into the image | `RUN` command at build time | `EXPOSE` documents the port | `CMD` command when the container starts
+- Why copy requirements.txt before app.py: Docker caches each layer, so the pip install layer is reused when only code changes
+- Why non-root user: if the app is compromised, the attacker doesn't get root in the container
+- Why `0.0.0.0` in CMD: so traffic from outside the container can reach the app
+- `docker build -t name:tag dir/` = build | `run -p 8080:8080` = map Mac port to container port | `ps` = running containers | `ps -a` = all | `logs` = app output | `exec` = run a command inside
+- `--rm` = delete container when it stops | `start`/`stop` = reuse an existing container | `docker container prune` = remove stopped ones
+- Long options use two dashes (`--rm`), single letters use one (`-p`, `-d`)
+- Mac ARM vs Azure amd64: local images on Apple Silicon are ARM; for Azure use `az acr build` or `docker buildx build --platform linux/amd64`
+- `brew install --cask docker` = Docker Desktop app (plain `brew install docker` is only the CLI)
+- venv = per-project Python packages; select it in VS Code so it recognizes Flask
+ 
+#### Sat, Nov 21
+ 
+- Pod = smallest unit Kubernetes runs (wraps one or more containers) | ReplicaSet = keeps N pods running | Deployment = manages ReplicaSets and rolling updates | Service = stable address that load-balances to pods
+- Labels/selectors = Service and Deployment find pods by label (`app: hello`); they must match
+- Readiness vs liveness probe: readiness = only send traffic when `/health` responds; liveness = restart the container if `/health` stops responding
+- Requests vs limits: requests = resources reserved for scheduling (HPA needs CPU requests); limits = maximum a container can use
+- `imagePullPolicy: IfNotPresent` = use the locally built image instead of pulling from a registry
+- ClusterIP = internal-only Service address; EXTERNAL-IP `<none>` is normal
+- Endpoints = pod IPs behind a Service; `<none>` means the selector doesn't match or pods aren't ready
+- `kubectl get / describe / logs / apply / scale / port-forward / delete` = list / details + events / app output / create or update from YAML / change replicas / reach a Service from my Mac / remove
+- `kubectl port-forward svc/hello 8080:80` = Mac port 8080 → Service port 80 → pod port 8080
+- Self-healing: deleted a pod and the Deployment replaced it automatically
+- Docker Desktop Kubernetes = local 1-node cluster, context `docker-desktop`; stop it by quitting Docker Desktop or turning Kubernetes off
+- Docker vs Kubernetes: Docker builds and runs containers on one machine; Kubernetes keeps containers running across a cluster (scaling, self-healing, rolling updates)
+ 
+#### Sun, Nov 22
+ 
+- Python list vs dict: list = ordered items by position (`names[0]`); dict = key/value pairs looked up by key (`tags["owner"]`)
+- String method I used: `.upper()` / `.split()` (replace with the one you used)
+- Service Fabric in one line: Microsoft's older platform for running microservices (stateless and stateful); Suncoast is moving these to Kubernetes
+- APIM in one line: a gateway in front of APIs for auth, rate limiting, transformation, and logging in one place
+- Zero trust 3 principles: verify explicitly, use least privilege, assume breach 

@@ -14,20 +14,31 @@ Hands-on Azure platform engineering lab: Terraform, Azure DevOps, AKS, Key Vault
 - [ ] **Jan 31** – API Management, New Relic, cost review, Bicep, Ansible
 
 ## Security
-- Governance: Azure Policy requires an `owner` tag on every resource group
+- **Governance:** Azure Policy requires an `owner` tag on every resource group
+- **Containers:** app runs as a non-root user
+- **Secrets:** Key Vault (RBAC mode); app reads secrets via a Key Vault reference
+- **Identity:** App Service managed identity with read-only Key Vault Secrets User; pipeline uses workload identity federation
+
+## Pipeline
+- **Nov 22:** Validate → Plan → Approval → Apply. PRs run Validate + Plan; Apply runs only after merge to `main` and manual approval. Signs in with workload identity federation (no stored secret).
 
 ## Tools
 Terraform · Azure DevOps · PowerShell · Bash · Python · Docker · Kubernetes · Helm · Bicep · Ansible · New Relic
 
 ## How to deploy
-1. `az login`
-2. `export TF_VAR_subscription_id=$(az account show --query id -o tsv)`
-3. `cd terraform && terraform init && terraform plan`
-4. `terraform apply` (from Nov 19: open a PR → pipeline runs Validate/Plan → merge → approve → Apply)
+1. Create a branch and make changes
+2. Open a PR → pipeline runs Validate + Plan
+3. Merge to `main` → approve the Apply stage in Azure DevOps
+4. Locally: `terraform plan` only (apply runs in the pipeline)
+
+**Run the app locally:**
+- Docker: `docker build -t hello-api:v1 app/` → `docker run --rm -p 8080:8080 hello-api:v1`
+- Kubernetes: `kubectl apply -f k8s/` → `kubectl port-forward svc/hello 8080:80`
 
 ## What I learned
 - **Week 1 (Nov 15):** Terraform works in a cycle: `init` → `plan` → `apply` → `destroy`, and `plan` lets me preview every change before it happens. When I changed a tag in the portal, `plan` caught the drift and `apply` put it back to match the code. Keeping the subscription ID in a `TF_VAR_` environment variable keeps it out of GitHub, and Azure Policy can block resources that are missing required tags.
-- **Week 2 (Nov 22):** ___
+
+- **Week 2 (Nov 22):** Remote state lets the pipeline and me share the same state safely. A managed identity lets the app read Key Vault with no password anywhere, but new role assignments take minutes to take effect and App Service caches the result. My pipeline runs Plan on every PR and Apply only after merge and approval. Docker packages the app into an image, and Kubernetes keeps the right number of copies running and replaces any that fail.
 - **Week 3 (Nov 29):** ___
 - **Week 4 (Dec 6):** ___
 - **Week 5 (Dec 13):** ___
@@ -49,4 +60,4 @@ Terraform · Azure DevOps · PowerShell · Bash · Python · Docker · Kubernete
 - [ ] AZ-400 – target spring
 
 ## Next steps
-- Remote state, Key Vault with managed identity, and an Azure DevOps pipeline (Week 2)
+- AZ-900 (Nov 30) 
